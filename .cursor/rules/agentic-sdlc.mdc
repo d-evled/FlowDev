@@ -1,0 +1,29 @@
+---
+description: Agentic SDLC loop — intent, plan, implement, test, review, ship, observe, iterate
+alwaysApply: true
+---
+
+# Agentic SDLC (this repo)
+
+Follow the closed loop: **intent → understand → implement → tests + docs → human review → deploy → monitor → learn**.
+
+## Before coding
+
+1. Confirm **intent** is captured (use `docs/intent/feature-intent-template.md` or linked issue).
+2. Produce a short **plan**: files to touch, risks, test strategy; wait for human direction if scope is ambiguous.
+
+## While coding
+
+- Prefer **small PRs** that map to one intent or acceptance criterion.
+- Add or update **tests** for behavior changes; CI is the source of truth for pass/fail.
+- Update **operator docs** when behavior, env vars, ports, or failure modes change (`docs/runbooks/`, `docs/deployment.md`).
+
+## After coding
+
+- Self-check against acceptance criteria and security basics (secrets, injection, authz).
+- Leave a concise PR summary: intent, what changed, how to verify.
+
+## Shortcuts
+
+- **Quick refine:** if review rejects intent/scope, revise the intent doc first—not incremental debate without criteria.
+- **Auto-fix path:** production signals → new intent → same PR/review/deploy loop; never skip CI or review for production changes unless explicitly emergency-only (then follow runbook).

@@ -1,0 +1,5 @@
+---
+pid: 61907
+cwd: /Users/samxie
+---
+(base) samxie@Sams-MacBook-Pro-5 ~ %

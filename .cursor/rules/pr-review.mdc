@@ -1,0 +1,24 @@
+---
+description: Human and agent checklist before requesting or approving review
+alwaysApply: true
+---
+
+# PR / review checklist
+
+## Author (before opening PR)
+
+- [ ] Intent / issue linked; acceptance criteria still accurate
+- [ ] `npm test` and `npm run lint` pass locally
+- [ ] Docs updated if endpoints, env vars, deploy, or failure modes changed
+- [ ] No secrets committed; no sensitive data in logs
+
+## Reviewer
+
+- [ ] Change matches intent and scope (watch **non-goals**)
+- [ ] Correctness and edge cases; error handling appropriate
+- [ ] Security: authz, input validation, dependency risk
+- [ ] Operability: migrations safe, rollback plausible, metrics/alerts considered
+
+## If not ready to merge
+
+Use **Quick refine**: update intent / criteria, then re-run the cycle—avoid rubber-stamping partial fixes without updated acceptance tests.

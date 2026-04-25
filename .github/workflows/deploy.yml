@@ -1,0 +1,43 @@
+name: Deploy
+
+# Manual gate: requires GitHub Environment "production" with required reviewers.
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "Container image tag to record for this deploy (e.g. git SHA or semver)"
+        required: true
+        type: string
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Record deploy metadata
+        run: |
+          mkdir -p dist-deploy
+          echo '{"tag":"${{ github.event.inputs.image_tag }}","sha":"${{ github.sha }}","actor":"${{ github.actor }}","time":"'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'"}' > dist-deploy/deploy-manifest.json
+          cat dist-deploy/deploy-manifest.json
+
+      - name: Build production image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: false
+          load: true
+          tags: agentic-sdlc-service:${{ github.event.inputs.image_tag }}
+
+      - name: Smoke test container
+        run: |
+          docker run -d --name svc -p 8080:8080 agentic-sdlc-service:${{ github.event.inputs.image_tag }}
+          sleep 2
+          curl -fsS http://127.0.0.1:8080/health
+          docker rm -f svc
+
+      - name: Placeholder — push to registry
+        run: |
+          echo "Add registry login + docker push when your cloud registry is chosen."
+          echo "Example: docker tag agentic-sdlc-service:${{ github.event.inputs.image_tag }} ghcr.io/${{ github.repository }}/agentic-sdlc-service:${{ github.event.inputs.image_tag }}"
