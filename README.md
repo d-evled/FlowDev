@@ -30,3 +30,4 @@ See [.env.example](.env.example). Process env vars apply in dev and in container
 - [docs/agentic-sdlc-playbook.md](docs/agentic-sdlc-playbook.md) — Quick refine, auto-fix, triage-to-intent
 - [docs/intent/feature-intent-template.md](docs/intent/feature-intent-template.md) — express intent before implementation
 - [docs/deployment.md](docs/deployment.md) — container and CI/CD overview
+
