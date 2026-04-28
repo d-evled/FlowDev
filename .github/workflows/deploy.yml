@@ -1,11 +1,22 @@
 name: Deploy
 
 # Manual gate: requires GitHub Environment "production" with required reviewers.
+#
+# GitHub repository Variables (Settings → Secrets and variables → Actions → Variables):
+#   GCP_PROJECT_ID          e.g. my-project-123
+#   GCP_REGION              e.g. us-central1
+#   GCP_ARTIFACT_REPOSITORY Artifact Registry repo id (Docker format)
+#   CLOUD_RUN_SERVICE       Cloud Run service name
+# Image is pushed as: REGION-docker.pkg.dev/PROJECT/REPO/flowdev:TAG
+#
+# GitHub secret:
+#   GCP_SA_KEY              JSON key for a deploy service account (see docs/deployment.md)
+#
 on:
   workflow_dispatch:
     inputs:
       image_tag:
-        description: "Container image tag to record for this deploy (e.g. git SHA or semver)"
+        description: "Container image tag (e.g. git SHA or semver)"
         required: true
         type: string
 
@@ -22,22 +33,42 @@ jobs:
           echo '{"tag":"${{ github.event.inputs.image_tag }}","sha":"${{ github.sha }}","actor":"${{ github.actor }}","time":"'"$(date -u +%Y-%m-%dT%H:%M:%SZ)"'"}' > dist-deploy/deploy-manifest.json
           cat dist-deploy/deploy-manifest.json
 
-      - name: Build production image
-        uses: docker/build-push-action@v6
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
         with:
-          context: .
-          push: false
-          load: true
-          tags: agentic-sdlc-service:${{ github.event.inputs.image_tag }}
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-      - name: Smoke test container
-        run: |
-          docker run -d --name svc -p 8080:8080 agentic-sdlc-service:${{ github.event.inputs.image_tag }}
-          sleep 2
-          curl -fsS http://127.0.0.1:8080/health
-          docker rm -f svc
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
 
-      - name: Placeholder — push to registry
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker "${{ vars.GCP_REGION }}-docker.pkg.dev" --quiet
+
+      - name: Build and push image
+        env:
+          IMAGE: ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${{ vars.GCP_ARTIFACT_REPOSITORY }}/flowdev:${{ github.event.inputs.image_tag }}
         run: |
-          echo "Add registry login + docker push when your cloud registry is chosen."
-          echo "Example: docker tag agentic-sdlc-service:${{ github.event.inputs.image_tag }} ghcr.io/${{ github.repository }}/agentic-sdlc-service:${{ github.event.inputs.image_tag }}"
+          docker build -t "$IMAGE" .
+          docker push "$IMAGE"
+          echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
+
+      - name: Deploy to Cloud Run
+        id: deploy
+        run: |
+          gcloud run deploy "${{ vars.CLOUD_RUN_SERVICE }}" \
+            --image "$IMAGE" \
+            --region "${{ vars.GCP_REGION }}" \
+            --platform managed \
+            --allow-unauthenticated \
+            --port 8080 \
+            --set-env-vars "LOG_LEVEL=info,READY=true" \
+            --quiet
+          URL=$(gcloud run services describe "${{ vars.CLOUD_RUN_SERVICE }}" \
+            --region "${{ vars.GCP_REGION }}" \
+            --format='value(status.url)')
+          echo "service_url=$URL" >> "$GITHUB_OUTPUT"
+          echo "Deployed to: $URL"
+
+      - name: Smoke test live service
+        run: |
+          curl -fsS "${{ steps.deploy.outputs.service_url }}/health"
