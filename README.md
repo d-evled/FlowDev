@@ -25,6 +25,18 @@ npm run build && npm start
 
 See [.env.example](.env.example). Process env vars apply in dev and in containers.
 
+## Production (Cloud Run) — reference
+
+| Item | Value |
+| --- | --- |
+| **Region** | `us-central1` |
+| **Service** | `flowdev-service` (from deploy workflow) |
+| **Service URL (regional example)** | `https://flowdev-service-210255342646.us-central1.run.app` |
+| **Deploy log URL (example)** | `https://flowdev-service-utkcmke5na-uc.a.run.app` |
+| **Image tag (example first deploy)** | `db6ab88bee0c986e5385c534eff39bfa934e75a3` (`git rev-parse HEAD` at deploy time) |
+
+Cloud Run may show more than one valid URL; use `gcloud run services describe --format='value(status.url)'` for the current canonical URL. For **uptime checks and alerts**, see [docs/runbooks/google-cloud-monitoring.md](docs/runbooks/google-cloud-monitoring.md).
+
 ## Workflow docs
 
 - [docs/agentic-sdlc-playbook.md](docs/agentic-sdlc-playbook.md) — Quick refine, auto-fix, triage-to-intent
