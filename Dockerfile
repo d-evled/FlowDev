@@ -13,7 +13,11 @@ RUN npm run build && npm prune --omit=dev
 
 FROM node:20-alpine AS runner
 WORKDIR /app
+ARG GIT_SHA=unknown
+ARG BUILD_TIME=unknown
 ENV NODE_ENV=production
+ENV GIT_SHA=$GIT_SHA
+ENV BUILD_TIME=$BUILD_TIME
 RUN addgroup -g 1001 -S nodejs && adduser -S nodejs -u 1001 -G nodejs
 COPY --from=build --chown=nodejs:nodejs /app/dist ./dist
 COPY --from=build --chown=nodejs:nodejs /app/node_modules ./node_modules

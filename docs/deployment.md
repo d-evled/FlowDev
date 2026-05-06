@@ -13,11 +13,13 @@ The [Deploy workflow](../.github/workflows/deploy.yml) uses `workflow_dispatch` 
 1. Configure secrets and variables (Cloud Run section below).
 2. Run **Actions → Deploy → Run workflow**, passing an **image tag** (for example your latest commit SHA).
 3. Approve the **production** environment when prompted.
-4. The workflow pushes to **Artifact Registry**, deploys to **Cloud Run**, then curls `/health` on the live URL.
+4. The workflow pushes to **Artifact Registry**, deploys to **Cloud Run**, then curls `/health` and **`/version`** on the live URL.
 
 ### Runtime configuration
 
 Cloud Run sets `LOG_LEVEL=info` and `READY=true` by default in the workflow. Adjust flags in `deploy.yml` or use `--set-env-vars` / secrets as needed.
+
+**`/version`:** `GIT_SHA` and `BUILD_TIME` are injected at **`docker build`** time (`Dockerfile` `ARG`/`ENV`). They identify what revision is running; override via rebuild/redeploy, not ad hoc Cloud Run env edits alone.
 
 ### Rollback
 

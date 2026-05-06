@@ -7,6 +7,7 @@ Operator-focused notes for **agentic-sdlc-service**.
 | [common-failures.md](common-failures.md) | Service unhealthy, deploy failed, local dev broken |
 | [alerts.md](alerts.md) | Alert fired or you are defining new SLOs |
 | [google-cloud-monitoring.md](google-cloud-monitoring.md) | Uptime checks and alerting on Cloud Run (GCP) |
+| [prometheus-scrape-cloud-run.md](prometheus-scrape-cloud-run.md) | Scrape `/metrics` (Managed Prometheus sidecar or external Prometheus) |
 
 ## Endpoints
 

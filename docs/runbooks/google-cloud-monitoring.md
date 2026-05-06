@@ -13,6 +13,8 @@ Cloud Run can show more than one valid URL (regional vs default). Either form ma
 
 **Uptime check:** use the **hostname** only, e.g. `flowdev-service-210255342646.us-central1.run.app`, path `/health`, **HTTPS** port **443**.
 
+**Prometheus `/metrics`:** uptime checks are not a substitute for metric ingestion. Use **Managed Service for Prometheus** with the Cloud Run sidecar (recommended) or an external Prometheus scraper—see [prometheus-scrape-cloud-run.md](prometheus-scrape-cloud-run.md).
+
 ---
 
 ## 0) Prereqs
