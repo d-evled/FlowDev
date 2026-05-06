@@ -34,6 +34,12 @@ export function buildApp(config: AppConfig, logger: Logger, metrics: Metrics) {
     uptimeSeconds: Math.round(process.uptime()),
   }));
 
+  app.get("/version", async () => ({
+    version: config.packageVersion,
+    gitSha: config.gitSha,
+    buildTime: config.buildTime,
+  }));
+
   app.get("/ready", async (_req, reply) => {
     if (!config.ready) {
       return reply.code(503).send({ status: "not_ready" });

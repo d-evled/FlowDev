@@ -48,7 +48,11 @@ jobs:
         env:
           IMAGE: ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/${{ vars.GCP_ARTIFACT_REPOSITORY }}/flowdev:${{ github.event.inputs.image_tag }}
         run: |
-          docker build -t "$IMAGE" .
+          BUILD_TIME="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          docker build \
+            --build-arg "GIT_SHA=${{ github.sha }}" \
+            --build-arg "BUILD_TIME=${BUILD_TIME}" \
+            -t "$IMAGE" .
           docker push "$IMAGE"
           echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
 
@@ -72,3 +76,4 @@ jobs:
       - name: Smoke test live service
         run: |
           curl -fsS "${{ steps.deploy.outputs.service_url }}/health"
+          curl -fsS "${{ steps.deploy.outputs.service_url }}/version"
